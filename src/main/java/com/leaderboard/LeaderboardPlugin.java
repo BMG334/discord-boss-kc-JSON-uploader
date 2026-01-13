@@ -26,7 +26,7 @@ import static net.runelite.http.api.RuneLiteAPI.GSON;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Patience Clan Leaderboard"
+	name = "Discord Boss KC JSON Uploader"
 )
 public class LeaderboardPlugin extends Plugin
 {
@@ -121,14 +121,14 @@ public class LeaderboardPlugin extends Plugin
 		StringBuilder leaderboard = new StringBuilder();
 		//System.out.println(client.getLocalPlayer());
 		//System.out.println(client.getLocalPlayer().getName());
-		leaderboard.append("{\n\"").append(client.getLocalPlayer().getName()).append("\": {");
+		leaderboard.append("{\"").append(client.getLocalPlayer().getName()).append("\": {");
         for (String bossName : bossNames) {
-            leaderboard.append("\n\"").append(bossName).append("\": {");
+            leaderboard.append("\"").append(bossName).append("\": {");
             leaderboard.append("\"count\": ").append(getKc(bossName)).append(",");
             leaderboard.append("\"pb\": ").append(getPb(bossName)).append("},");
         }
 		leaderboard.setLength(leaderboard.length() - 1); //removes the last comma
-		leaderboard.append("}\n}"); // cap off the JSON
+		leaderboard.append("}}"); // cap off the JSON
 		return leaderboard.toString();
 	}
 
