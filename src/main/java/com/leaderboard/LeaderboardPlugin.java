@@ -1,9 +1,6 @@
 package com.leaderboard;
 
 import com.google.common.base.Splitter;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.inject.Provides;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -218,7 +215,6 @@ public class LeaderboardPlugin extends Plugin
         }
 		leaderboard.setLength(leaderboard.length() - 1); //removes the last comma
 		leaderboard.append("\n}"); // cap off the JSON
-		System.out.println(leaderboard.toString());
 		return leaderboard.toString();
 	}
 
@@ -272,7 +268,6 @@ public class LeaderboardPlugin extends Plugin
 				@Override
 				public void onResponse(Call call, Response response) throws IOException
 				{
-					System.out.println(response);
 					response.close();
 				}
 			});
