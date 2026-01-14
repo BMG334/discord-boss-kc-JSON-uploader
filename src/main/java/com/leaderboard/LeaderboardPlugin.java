@@ -1,6 +1,9 @@
 package com.leaderboard;
 
 import com.google.common.base.Splitter;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.inject.Provides;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -11,15 +14,10 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.HttpUrl;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 
 import static net.runelite.http.api.RuneLiteAPI.GSON;
@@ -204,7 +202,7 @@ public class LeaderboardPlugin extends Plugin
 			// Your logic to run on login goes here
 			String leaderboard = compileLeaderboard();
 			WebhookBody webhookBody = new WebhookBody();
-			webhookBody.setContent(leaderboard);
+			webhookBody.setContent(client.getLocalPlayer().getName());
 			sendWebhook(webhookBody);
 		}
 	}
@@ -212,16 +210,15 @@ public class LeaderboardPlugin extends Plugin
 	private String compileLeaderboard()
 	{
 		StringBuilder leaderboard = new StringBuilder();
-		//System.out.println(client.getLocalPlayer());
-		//System.out.println(client.getLocalPlayer().getName());
-		leaderboard.append("{\"").append(client.getLocalPlayer().getName()).append("\": {");
+		leaderboard.append("{");
         for (String bossName : bossNames) {
-            leaderboard.append("\"").append(bossName).append("\": {");
+            leaderboard.append("\n\"").append(bossName).append("\": {");
             leaderboard.append("\"count\": ").append(getKc(bossName)).append(",");
-            leaderboard.append("\"pb\": ").append(getPb(bossName)).append("},");
+            leaderboard.append("\"pb\": ").append(getPb(bossName)).append("},\n");
         }
 		leaderboard.setLength(leaderboard.length() - 1); //removes the last comma
-		leaderboard.append("}}"); // cap off the JSON
+		leaderboard.append("\n}"); // cap off the JSON
+		System.out.println(leaderboard.toString());
 		return leaderboard.toString();
 	}
 
@@ -241,7 +238,9 @@ public class LeaderboardPlugin extends Plugin
 	{
 		MultipartBody.Builder requestBodyBuilder = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("payload_json", GSON.toJson(webhookBody));
+				.addFormDataPart("payload_json", GSON.toJson(webhookBody))
+				.addFormDataPart("file",String.format("%s-%s.json", webhookBody.getContent(), Instant.now().toString()),
+						RequestBody.create(MediaType.parse("application/json"),compileLeaderboard()));
 
 		MultipartBody requestBody = requestBodyBuilder.build();
 
@@ -273,6 +272,7 @@ public class LeaderboardPlugin extends Plugin
 				@Override
 				public void onResponse(Call call, Response response) throws IOException
 				{
+					System.out.println(response);
 					response.close();
 				}
 			});
